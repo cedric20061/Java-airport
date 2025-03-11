@@ -22,4 +22,9 @@ public class Admin extends User {
     public boolean removeFlight(int flightId) {
         return FlightService.removeFlight(flightId);
     }
+
+    // Modifier un vol
+    public boolean updateFlight(int flightId, String flightCode, String destination, String date, int seats){
+        return FlightService.updateFlight(flightId, flightCode, destination, date, seats);
+    }
 }

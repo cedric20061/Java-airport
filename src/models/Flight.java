@@ -9,7 +9,7 @@ public class Flight {
     private LocalDate date;
     private int availableSeats;
 
-    public Flight(int id, String flightCode, String destination, LocalDate date, int availableSeats) {
+    public Flight(String id, String flightCode, String destination, LocalDate date, int availableSeats) {
         this.id = id;
         this.flightCode = flightCode;
         this.destination = destination;

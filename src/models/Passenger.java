@@ -1,10 +1,12 @@
 package src.models;
 
 import java.util.List;
+
+import src.services.FlightService;
 import src.services.ReservationService;
 
 public class Passenger extends User {
-    private List<Integer> bookedFlights; // Liste des ID des vols réservés
+    private List<Integer> bookedFlights;
 
     public Passenger(int id, String name, String email, String password) {
         super(id, name, email, password);
@@ -34,7 +36,7 @@ public class Passenger extends User {
         return success;
     }
 
-    public List<Integer> getBookedFlights() {
-        return bookedFlights;
+    public List<Flight> getBookedFlights() {
+        return FlightService.getFightsList(this.bookedFlights);
     }
 }

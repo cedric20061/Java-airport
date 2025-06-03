@@ -1,31 +1,27 @@
 package src.models;
 
-public class Reservation {
-    private int id;
-    private int flightId;
-    private int passengerId;
-    private String seatNumber;
+import java.io.Serializable;
 
-    public Reservation(int id, int flightId, int passengerId, String seatNumber) {
-        this.id = id;
-        this.flightId = flightId;
-        this.passengerId = passengerId;
-        this.seatNumber = seatNumber;
+public class Reservation implements Serializable {
+    private String nomClient;
+    private String numeroVol;
+    private int nombrePlacesReservees;
+
+    public Reservation(String nomClient, String numeroVol, int nombrePlacesReservees) {
+        this.nomClient = nomClient;
+        this.numeroVol = numeroVol;
+        this.nombrePlacesReservees = nombrePlacesReservees;
     }
 
-    public int getId() {
-        return id;
+    // Getters et setters
+
+    @Override
+    public String toString() {
+        return nomClient + ";" + numeroVol + ";" + nombrePlacesReservees;
     }
 
-    public int getFlightId() {
-        return flightId;
-    }
-
-    public int getPassengerId() {
-        return passengerId;
-    }
-
-    public String getSeatNumber() {
-        return seatNumber;
+    public static Reservation fromString(String line) {
+        String[] parts = line.split(";");
+        return new Reservation(parts[0], parts[1], Integer.parseInt(parts[2]));
     }
 }

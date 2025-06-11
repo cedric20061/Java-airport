@@ -1,23 +1,31 @@
-package src.models;
+package models;
 
 import java.io.Serializable;
 
 public class Reservation implements Serializable {
-    private String nomClient;
-    private String numeroVol;
-    private int nombrePlacesReservees;
+    private String clientName;
+    private String flightId;
+    private int seatsReserved;
 
-    public Reservation(String nomClient, String numeroVol, int nombrePlacesReservees) {
-        this.nomClient = nomClient;
-        this.numeroVol = numeroVol;
-        this.nombrePlacesReservees = nombrePlacesReservees;
+    public Reservation(String clientName, String flightId, int seatsReserved) {
+        this.clientName = clientName;
+        this.flightId = flightId;
+        this.seatsReserved = seatsReserved;
     }
 
     // Getters et setters
-
+    public String getClientName() {
+        return this.clientName;
+    }
+    public int getSeatsReserved() {
+        return this.seatsReserved;
+    }
+    public String getFlightId() {
+        return this.flightId;
+    }
     @Override
     public String toString() {
-        return nomClient + ";" + numeroVol + ";" + nombrePlacesReservees;
+        return clientName + ";" + flightId + ";" + seatsReserved;
     }
 
     public static Reservation fromString(String line) {

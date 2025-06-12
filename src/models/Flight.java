@@ -22,7 +22,13 @@ public class Flight implements Serializable {
     public int getSeatsNumber() {
         return this.seatsNumber;
     }
-
+    public String getDestination() {
+        return this.destination;
+    }
+    public String getDateDepart() {
+        return this.dateDepart;
+    }
+    
     public int setSeatsNumber(int seatsNumber) {
         this.seatsNumber = seatsNumber;
         return this.seatsNumber;

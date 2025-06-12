@@ -74,19 +74,7 @@ public class AirportHandler {
             return "Flight not found.";
         }
     }
-
-    public static String updateFlight(Flight updatedFlight) {
-        List<Flight> flights = getFlights();
-        for (int i = 0; i < flights.size(); i++) {
-            if (flights.get(i).getFlightId().equals(updatedFlight.getFlightId())) {
-                flights.set(i, updatedFlight);
-                saveFlights(flights);
-                return "Flight updated successfully.";
-            }
-        }
-        return "Flight not found.";
-    }
-
+    
     public static String bookFlight(Reservation reservation) {
         List<Flight> flights = getFlights();
         List<Reservation> reservations = getReservations();
@@ -104,5 +92,44 @@ public class AirportHandler {
             }
         }
         return "Flight not found.";
+    }
+    public static String cancelReservation(String clientName, String flightId) {
+        List<Flight> flights = getFlights();
+        List<Reservation> reservations = getReservations();
+        for (Reservation reservation : reservations) {
+            if (reservation.getClientName().equals(clientName) && reservation.getFlightId().equals(flightId)) {
+                reservations.remove(reservation);
+                saveReservations(reservations);
+                for (Flight flight : flights) {
+                    if (flight.getFlightId().equals(flightId)) {
+                        flight.setSeatsNumber(flight.getSeatsNumber() + reservation.getSeatsReserved());
+                        saveFlights(flights);
+                        return "Reservation cancelled successfully.";
+                    }
+                }
+            }
+        }
+        return "Reservation not found.";
+    }
+
+    public static void displayFlights() {
+        List<Flight> flights = getFlights();
+        if (flights.isEmpty()) {
+            System.out.println("Aucun vol disponible.");
+            return;
+        }
+        System.out.println("Liste des vols :");
+        System.out.println("╔════════════╦══════════════════╦═══════════════╦════════════════════╗");
+        System.out.printf("║ %-10s ║ %-16s ║ %-13s ║ %-18s ║%n", "Vol ID", "Destination", "Départ", "Places dispo");
+        System.out.println("╠════════════╬══════════════════╬═══════════════╬════════════════════╣");
+
+        flights.forEach(flightItem -> {
+            System.out.printf("║ %-10s ║ %-16s ║ %-13s ║ %-18d ║%n",
+                flightItem.getFlightId(),
+                flightItem.getDestination(),
+                flightItem.getDateDepart(),
+                flightItem.getSeatsNumber());
+        });
+        System.out.println("╚════════════╩══════════════════╩═══════════════╩════════════════════╝");
     }
 }

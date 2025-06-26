@@ -22,7 +22,7 @@ public class UserController {
         int newId = getLastUserId() + 1;
 
         try (BufferedWriter bw = new BufferedWriter(new FileWriter(FILE_PATH, true))) {
-            bw.write(newId + "," + username + "," + password + "," + role);
+            bw.write(newId + ";" + username + ";" + password + ";" + role);
             bw.newLine();
             return new User(newId, username, password, role);
         } catch (IOException e) {

@@ -101,24 +101,21 @@ public class ReservationController {
     }
 
 
-    public static boolean cancelReservation(String clientName, String flightId) {
+    public static boolean cancelReservation(int reservationId) {
         List<Flight> flights = FlightController.getFlights();
         List<Reservation> reservations = getReservations();
+        Reservation reservation = reservations.stream().filter(r->r.getId() == reservationId).findFirst().orElse(null);
+        Flight flight = flights.stream().filter(f->f.getFlightId().equals(reservation.getFlightId())).findFirst().orElse(null);
 
-        for (Reservation reservation : reservations) {
-            if (reservation.getClientName().equals(clientName) && reservation.getFlightId().equals(flightId)) {
-                reservations.remove(reservation);
-                saveReservations(reservations);
-                for (Flight flight : flights) {
-                    if (flight.getFlightId().equals(flightId)) {
-                        flight.setSeatsNumber(flight.getSeatsNumber() + reservation.getSeatsReserved());
-                        FlightController.saveFlights(flights);
-                        return true;
-                    }
-                }
-            }
+        if (reservation == null || flight == null){
+            return false;
         }
-        return false;
+        reservations.remove(reservation);
+        saveReservations(reservations);
+        
+        flight.setSeatsNumber(flight.getSeatsNumber() + reservation.getSeatsReserved());
+        FlightController.saveFlights(flights);
+        return true;
     }
 
     private static void saveReservations(List<Reservation> reservations) {

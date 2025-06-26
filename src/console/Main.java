@@ -3,7 +3,9 @@ package console;
 import java.util.List;
 import java.util.Scanner;
 
-import main.AirportHandler;
+import controllers.FlightController;
+import controllers.ReservationController;
+import controllers.UserController;
 import models.Flight;
 import models.Reservation;
 import models.User;
@@ -12,21 +14,24 @@ public class Main {
 
     public static void main(String[] args) {
         try (Scanner sc = new Scanner(System.in)) {
-            System.out.println("1. Login");
-            System.out.println("2. Register");
-            int choice = Integer.parseInt(sc.nextLine());
-
             User user = null;
-            if (choice == 1) user = handleLogin(sc);
-            else if (choice == 2) user = handleRegister(sc);
 
-            if (user == null) {
-                System.out.println("Authentication failed.");
-                return;
+            while (user == null) {
+                System.out.println("== Welcome to Airport Manager ==");
+                System.out.println("1. Login");
+                System.out.println("2. Register");
+                System.out.print("Choice: ");
+                String input = sc.nextLine();
+
+                switch (input) {
+                    case "1" -> user = handleLogin(sc);
+                    case "2" -> user = handleRegister(sc);
+                    default -> System.out.println("Invalid option. Try again.");
+                }
             }
 
-            if (user.getUserRole() == 1) adminMenu(user, sc);
-            else userMenu(user, sc);
+            if (user.getUserRole() == 1) adminMenu(sc, user);
+            else userMenu(sc, user);
         }
     }
 
@@ -35,12 +40,11 @@ public class Main {
         String username = sc.nextLine();
         System.out.print("Password: ");
         String password = sc.nextLine();
-        try {
-            return AirportHandler.login(username, password);
-        } catch (Exception e) {
-            System.out.println("Login failed.");
-            return null;
+        User user = UserController.login(username, password);
+        if (user == null) {
+            System.out.println("Login failed. Try again.");
         }
+        return user;
     }
 
     private static User handleRegister(Scanner sc) {
@@ -48,36 +52,43 @@ public class Main {
         String username = sc.nextLine();
         System.out.print("Password: ");
         String password = sc.nextLine();
-        try {
-            return AirportHandler.register(username, password, 1);
-        } catch (Exception e) {
-            System.out.println("Registration failed.");
-            return null;
+        return UserController.register(username, password, 2); // Default to role 2 (client)
+    }
+
+    private static void adminMenu(Scanner sc, User user) {
+        while (true) {
+            System.out.println("\n== Admin Menu ==");
+            System.out.println("1. Manage Flights");
+            System.out.println("2. Manage Reservations");
+            System.out.println("3. View All Flights");
+            System.out.println("4. Logout");
+
+            System.out.print("Choice: ");
+            String input = sc.nextLine();
+
+            switch (input) {
+                case "1" -> manageFlights(sc);
+                case "2" -> manageReservations(sc, ReservationController.getReservations(), user);
+                case "3" -> FlightController.displayFlights();
+                case "4" -> {
+                    System.out.println("Logging out...");
+                    return;
+                }
+                default -> System.out.println("Invalid choice.");
+            }
         }
     }
 
-    private static void adminMenu(User user, Scanner sc) {
-        System.out.println("Welcome Admin");
-        System.out.println("1. Manage Flights");
-        System.out.println("2. Manage Reservations");
-        System.out.println("3. View Flights");
-        int choice = Integer.parseInt(sc.nextLine());
-
-        switch (choice) {
-            case 1 -> flightManagement(sc);
-            case 2 -> handleReservation(sc, user);
-            case 3 -> AirportHandler.displayFlights();
-        }
-    }
-
-    private static void flightManagement(Scanner sc) {
+    private static void manageFlights(Scanner sc) {
+        System.out.println("\n== Flight Management ==");
         System.out.println("1. Add Flight");
         System.out.println("2. Update Flight");
         System.out.println("3. Delete Flight");
-        int choice = Integer.parseInt(sc.nextLine());
+        System.out.print("Choice: ");
+        String input = sc.nextLine();
 
-        switch (choice) {
-            case 1 -> {
+        switch (input) {
+            case "1" -> {
                 System.out.print("Flight number: ");
                 String num = sc.nextLine();
                 System.out.print("Destination: ");
@@ -88,64 +99,91 @@ public class Main {
                 int seats = Integer.parseInt(sc.nextLine());
 
                 Flight flight = new Flight(num, dest, date, seats);
-                AirportHandler.addFlight(flight);
-                System.out.println("Flight added!");
+                FlightController.addFlight(flight);
+                System.out.println("Flight added.");
             }
-            case 2 -> {
+            case "2" -> {
                 System.out.print("Flight number: ");
                 String num = sc.nextLine();
-                Flight flightToUpdate = AirportHandler.getFlights().stream()
-                        .filter(f -> f.getFlightId().equals(num))
-                        .findFirst()
-                        .orElse(null);
-                if (flightToUpdate != null) {
+                Flight flight = FlightController.getFlightById(num);
+                if (flight != null) {
                     System.out.print("New number of seats: ");
-                    int newSeats = Integer.parseInt(sc.nextLine());
-                    flightToUpdate.setSeatsNumber(newSeats);
-                    AirportHandler.saveFlights(AirportHandler.getFlights());
-                    System.out.println("Flight updated!");
+                    int seats = Integer.parseInt(sc.nextLine());
+                    flight.setSeatsNumber(seats);
+                    FlightController.saveFlights(FlightController.getFlights());
+                    System.out.println("Flight updated.");
                 } else {
                     System.out.println("Flight not found.");
                 }
             }
-            case 3 -> {
-                System.out.print("Flight number to delete: ");
+            case "3" -> {
+                System.out.print("Flight number: ");
                 String num = sc.nextLine();
-                String result = AirportHandler.removeFlight(num);
-                System.out.println(result);
+                FlightController.deleteFlight(num);
+                System.out.println("Flight deleted if existed.");
             }
+            default -> System.out.println("Invalid option.");
         }
     }
 
-    private static void handleReservation(Scanner sc, User user) {
-        System.out.print("Client name: ");
-        String clientName = sc.nextLine();
-        System.out.print("Flight number: ");
-        String flightId = sc.nextLine();
-        System.out.print("Number of seats: ");
-        int seats = Integer.parseInt(sc.nextLine());
-        Reservation reservation = new Reservation(user.getUserId(), clientName, flightId, seats);
-        AirportHandler.bookFlight(reservation);
-        System.out.println("Reservation confirmed.");
+    private static void manageReservations(Scanner sc, List<Reservation> reservations, User user) {
+        ReservationController.displayReservations(reservations);
+        System.out.println("\n== Reservation Management ==");
+        System.out.println("1. Add Reservation");
+        System.out.println("2. Update Reservation");
+        System.out.println("3. Cancel Reservation");
+        System.out.print("Choice: ");
+        String input = sc.nextLine();
+
+        switch (input) {
+            case "1" -> {
+                System.out.print("Flight ID: ");
+                String flightId = sc.nextLine();
+                System.out.print("Seats to reserve: ");
+                int seats = Integer.parseInt(sc.nextLine());
+                int result = ReservationController.bookFlight(user.getUserId(), user.getUsername(), flightId, seats);
+                if (result > 0) System.out.println("Reservation created. ID: " + result);
+                else System.out.println("Reservation failed. Not enough seats or flight not found.");
+            }
+            case "2" -> {
+                System.out.print("Reservation ID: ");
+                int resId = Integer.parseInt(sc.nextLine());
+                System.out.print("New seat count: ");
+                int newSeats = Integer.parseInt(sc.nextLine());
+                boolean ok = ReservationController.updateReservation(resId, newSeats);
+                System.out.println(ok ? "Reservation updated." : "Update failed.");
+            }
+            case "3" -> {
+                System.out.print("Reservation ID: ");
+                int resId = Integer.parseInt(sc.nextLine());
+                boolean canceled = ReservationController.cancelReservation(resId);
+                System.out.println(canceled ? "Reservation cancelled." : "Cancellation failed.");
+            }
+            default -> System.out.println("Invalid choice.");
+        }
     }
 
-    private static void userMenu(User user, Scanner sc) {
-        System.out.println("1. View Flights");
-        System.out.println("2. My Reservations");
-        int choice = Integer.parseInt(sc.nextLine());
+    private static void userMenu(Scanner sc, User user) {
+        while (true) {
+            System.out.println("\n== User Menu ==");
+            System.out.println("1. View Flights");
+            System.out.println("2. My Reservations");
+            System.out.println("3. Logout");
 
-        switch (choice) {
-            case 1 -> {
-                AirportHandler.displayFlights();
-                System.out.println("Do you want to book a flight? 1 = yes, 2 = no");
-                if (Integer.parseInt(sc.nextLine()) == 1) {
-                    handleReservation(sc, user);
+            System.out.print("Choice: ");
+            String input = sc.nextLine();
+
+            switch (input) {
+                case "1" -> FlightController.displayFlights();
+                case "2" -> {
+                    List<Reservation> userRes = ReservationController.getUserReservations(user.getUserId());
+                    manageReservations(sc, userRes, user);
                 }
-            }
-            case 2 -> {
-                List<Reservation> res = AirportHandler.getUserReservation(user.getUserId());
-                AirportHandler.displayReservations(res);
-                // TODO: Add update/delete reservation options
+                case "3" -> {
+                    System.out.println("Logging out...");
+                    return;
+                }
+                default -> System.out.println("Invalid choice.");
             }
         }
     }

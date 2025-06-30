@@ -5,8 +5,8 @@ import javax.swing.table.DefaultTableModel;
 import java.awt.*;
 import java.util.List;
 import models.Flight; // Ton modèle
-import main.AirportHandler; // Gestionnaire de vols
 import components.ButtonRenderer; // Rendu du bouton
+import controllers.FlightController;
 import components.ButtonEditor; // Éditeur du bouton
 public class MainGUI {
     public static void main(String[] args) {
@@ -20,7 +20,7 @@ public class MainGUI {
         String[] columnNames = { "Vol ID", "Destination", "Départ", "Places dispo", "Actions" };
 
         // Obtenir les données des vols
-        List<Flight> flights = AirportHandler.getFlights();
+        List<Flight> flights = FlightController.getFlights();
         Object[][] rowData = new Object[flights.size()][5];
 
         for (int i = 0; i < flights.size(); i++) {

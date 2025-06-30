@@ -43,7 +43,7 @@ public class UserController {
         try (BufferedReader br = new BufferedReader(new FileReader(FILE_PATH))) {
             String line;
             while ((line = br.readLine()) != null) {
-                String[] parts = line.split(",");
+                String[] parts = line.split(";");
                 if (parts.length == 4 && parts[1].equals(username)) {
                     return User.fromString(line);
                 }
